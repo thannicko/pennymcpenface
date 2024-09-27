@@ -18,7 +18,7 @@ constexpr pin_size_t in1Pin = 1;
 constexpr pin_size_t in2Pin = 0;
 
 // Linear Motor Config
-constexpr float steps_per_mm = 2; //how many steps per mm from calibration
+constexpr float steps_per_5mm = 10; //how many steps per mm from calibration
 
 // Stepper Motor OConfig
 constexpr uint16_t MOTOR_CURRENT = 4000;
@@ -136,7 +136,7 @@ void linearStop() {
   linearDriver.setPin(in2Pin, 0);
 }
 
-int linearRetractStep(uint16_t step = steps_per_mm, uint16_t speed = 4095)
+int linearRetractStep(uint16_t step = steps_per_5mm, uint16_t speed = 4095)
 {
   int current_position  = readPosition();
   int target_position   = current_position - step;
@@ -149,7 +149,7 @@ int linearRetractStep(uint16_t step = steps_per_mm, uint16_t speed = 4095)
   return 0;
 }
 
-int linearExtendStep(uint16_t step = steps_per_mm, uint16_t speed = 4095)
+int linearExtendStep(uint16_t step = steps_per_5mm, uint16_t speed = 4095)
 {
   int current_position  = readPosition();
   int target_position   = current_position + step;
