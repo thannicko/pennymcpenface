@@ -35,6 +35,7 @@ constexpr float DEFAULT_ACCEL = (FULL_STEPS_PER_REV * MICROSTEP_FACTOR / RATIO_A
 constexpr float DEFAULT_DECEL = (FULL_STEPS_PER_REV * MICROSTEP_FACTOR / RAIIO_DECEL);
 
 constexpr float RS = 0.05;
+constexpr float GB = 20;
 
 TMC5160Stepper stepperDriver(pin_chipSelA, RS);
 
@@ -109,7 +110,7 @@ void setup() {
   }
 }
 
-
+// FUNCTIONS FOR THE LINEAR EXTENDER
 int readPosition() {
   return ADS.readADC(1);
 }
@@ -127,27 +128,88 @@ void linearExtend(uint16_t speed = 4095)
   linearDriver.setPin(in2Pin, speed);
 }
 
+
+int linearRetractStep(uint16_t speed = 4095, uint16_t step = 10)
+{
+  int current_position  = readPosition();
+  int target_position   = current_position - step;
+  linearRetract();
+  while(current_position > target_position){
+    current_position  = readPosition();
+    delay(10);
+    }
+  linearStop();
+  return 0;
+}
+
+int linearExtendStep(uint16_t speed = 4095, uint16_t step = 10)
+{
+  int current_position  = readPosition();
+  int target_position   = current_position + step;
+  linearExtend();
+  while(current_position < target_position){
+    current_position  = readPosition();
+    delay(10);
+    }
+  linearStop();
+  return 0; 
+}
+
 void linearStop() {
   linearDriver.setPin(in1Pin, 0);
   linearDriver.setPin(in2Pin, 0);
 }
 
+// FUNCTIONS FOR THE ROTATIONAL STEPPER MOTOR
 
-// Example of using the functions to control things
-void loop() {
-  Serial.println(readPosition()); // Read "FL" Port
-  linearRetract();
-  delay(1000);
-//  linearExtend();
-//  delay(1000);
-  linearStop();
-  delay(1000);
-
-  // Move 10 full steps from current position
-  stepperDriver.XTARGET(stepperDriver.XACTUAL() + (MICROSTEP_FACTOR * 10) ); // This is in Microsteps
-  // Wait until done
+int rotationStep(int direction = 1, uint16_t angle = 1, uint16_t waiting_delay = 100){
+  // Move full steps from current position
+//  stepperDriver.XTARGET(stepperDriver.XACTUAL() + direction * (MICROSTEP_FACTOR * step) );
+  stepperDriver.XTARGET(stepperDriver.XACTUAL() + direction * (MICROSTEP_FACTOR * FULL_STEPS_PER_REV * GB * angle / 360) );
   while (!stepperDriver.position_reached()) {
     Serial.println("Moving");
-    delay(1000);
+    delay(waiting_delay);
   }
+  return 0;
+}
+
+// MAIN STUFF
+void loop() {
+  int right_rotation = 1;
+  int left_rotation  = -1;
+  
+//  // Move 10 full steps from current position
+//  stepperDriver.XTARGET(stepperDriver.XACTUAL() + (MICROSTEP_FACTOR * 10) ); // This is in Microsteps
+//  // Wait until done
+//  while (!stepperDriver.position_reached()) {
+//    Serial.println("Moving");
+//    delay(1000);
+//  }
+
+  if (Serial.available()) {
+      Serial.println(readPosition()); // Read "FL" Port
+      char input = Serial.read();
+      
+  
+      if (input == 's') {     
+        Serial.println("User Input: Move down!");
+        linearRetractStep();
+      }
+
+      if (input == 'w') {
+        Serial.println("User Input: Move up!");
+        linearExtendStep();
+      }
+
+      if (input == 'a') {
+        Serial.println("User Input: Move Left!");
+        rotationStep(left_rotation);
+      }
+
+      if (input == 'd') {
+        Serial.println("User Input: Move Right!");
+        rotationStep(right_rotation);
+      }
+    Serial.println(readPosition()); // Read "FL" Port
+    }
 }
