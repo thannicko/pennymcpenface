@@ -1,7 +1,10 @@
 #include <TMCStepper.h>
 #include <Wire.h>
-#include "ADS1X15.h"
 #include <Adafruit_PWMServoDriver.h>
+// #include "ADS1X15.h"
+// #include <Adafruit_ADS1X15.h>
+#include "Adafruit_ADS1X15.h"
+
 constexpr pin_size_t pin_chipSelA = 21; // Mot0
 constexpr pin_size_t pin_chipSelB = 18; // Enc0
 constexpr pin_size_t pin_chipSelC = 25; // Mot1
