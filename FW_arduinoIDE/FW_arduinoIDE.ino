@@ -17,6 +17,9 @@ constexpr pin_size_t pin_SPI0MISO = 20;
 constexpr pin_size_t in1Pin = 1;
 constexpr pin_size_t in2Pin = 0;
 
+// Linear Motor Config
+constexpr float steps_per_mm = 2; //how many steps per mm from calibration
+
 // Stepper Motor OConfig
 constexpr uint16_t MOTOR_CURRENT = 4000;
 constexpr uint8_t DEFAULT_IRUN = 31;
@@ -128,8 +131,12 @@ void linearExtend(uint16_t speed = 4095)
   linearDriver.setPin(in2Pin, speed);
 }
 
+void linearStop() {
+  linearDriver.setPin(in1Pin, 0);
+  linearDriver.setPin(in2Pin, 0);
+}
 
-int linearRetractStep(uint16_t speed = 4095, uint16_t step = 10)
+int linearRetractStep(uint16_t step = steps_per_mm, uint16_t speed = 4095)
 {
   int current_position  = readPosition();
   int target_position   = current_position - step;
@@ -142,7 +149,7 @@ int linearRetractStep(uint16_t speed = 4095, uint16_t step = 10)
   return 0;
 }
 
-int linearExtendStep(uint16_t speed = 4095, uint16_t step = 10)
+int linearExtendStep(uint16_t step = steps_per_mm, uint16_t speed = 4095)
 {
   int current_position  = readPosition();
   int target_position   = current_position + step;
@@ -155,16 +162,12 @@ int linearExtendStep(uint16_t speed = 4095, uint16_t step = 10)
   return 0; 
 }
 
-void linearStop() {
-  linearDriver.setPin(in1Pin, 0);
-  linearDriver.setPin(in2Pin, 0);
-}
+
 
 // FUNCTIONS FOR THE ROTATIONAL STEPPER MOTOR
 
 int rotationStep(int direction = 1, uint16_t angle = 1, uint16_t waiting_delay = 100){
-  // Move full steps from current position
-//  stepperDriver.XTARGET(stepperDriver.XACTUAL() + direction * (MICROSTEP_FACTOR * step) );
+  // Move an angle from current position
   stepperDriver.XTARGET(stepperDriver.XACTUAL() + direction * (MICROSTEP_FACTOR * FULL_STEPS_PER_REV * GB * angle / 360) );
   while (!stepperDriver.position_reached()) {
     Serial.println("Moving");
@@ -178,13 +181,6 @@ void loop() {
   int right_rotation = 1;
   int left_rotation  = -1;
   
-//  // Move 10 full steps from current position
-//  stepperDriver.XTARGET(stepperDriver.XACTUAL() + (MICROSTEP_FACTOR * 10) ); // This is in Microsteps
-//  // Wait until done
-//  while (!stepperDriver.position_reached()) {
-//    Serial.println("Moving");
-//    delay(1000);
-//  }
 
   if (Serial.available()) {
       Serial.println(readPosition()); // Read "FL" Port
