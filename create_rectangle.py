@@ -1,5 +1,6 @@
 import numpy as np
 import plotly.graph_objs as go
+import math
 
 def create_rectangle(x, y, step = 1, y_offset = 230):
     points = []
@@ -57,3 +58,5 @@ def plot_rectangle_path(rect_points):
     
     fig = go.Figure(data=[trace], layout=layout)
     fig.show()
+    
+    

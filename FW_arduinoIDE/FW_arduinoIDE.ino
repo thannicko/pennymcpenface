@@ -195,12 +195,12 @@ void loop() {
   
       if (input == 's') {     
         Serial.println("Move down!");
-        linearRetractStep();
+        linearRetractStep(5);
       }
 
       if (input == 'w') {
         Serial.println("Move up!");
-        linearExtendStep();
+        linearExtendStep(5);
       }
 
       if (input == 'a') {

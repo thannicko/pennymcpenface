@@ -12,16 +12,23 @@ cmd_down    = 's'
 cmd_left    = 'a'
 cmd_right   = 'd'
 min_angle   = 0.2 #degree
-min_radius  = 5 #mm
+min_radius  = 2 #mm
+
+theta_position_conversion = 2840
 
 # calibration shows the linear motor moves differently up and down
 min_radius_up =  4.8#mm
 min_radius_down = 4.5
 
+min_radius_up =  2#mm
+min_radius_down = 2
 
-def plot(ser, path, r_0, sleep_time=0.1):
+
+def plot(ser, path, r_0, theta_0, sleep_time=0.1):
     # r_prev      = path[0][0]
-    theta_prev  = path[0][1]
+    # theta_prev  = path[0][1]
+    theta_offset   = path[0][1]
+    theta_prev     = theta_0 + theta_offset
     
     r_prev      = r_0
     # theta_prev  = 0
@@ -29,6 +36,7 @@ def plot(ser, path, r_0, sleep_time=0.1):
     
     try:
         for r, theta in path:
+            print(f"Current position: r: {r_prev}mm, theta: {round(theta_prev)}")
             delta_r     = round(r - r_prev,1)
             delta_theta = round(theta - theta_prev,1)
             
@@ -70,6 +78,8 @@ def plot(ser, path, r_0, sleep_time=0.1):
                                         sleep_time=sleep_time)
                 # print(delta_theta)
                 theta_prev = theta - (delta_theta%min_angle)
+                rg, theta_prev = readPosition(serial=ser)
+                theta_prev = theta_prev + theta_offset
                 # theta_prev = theta
     
     except(KeyboardInterrupt):
@@ -82,12 +92,13 @@ def main(args):
     ser = serial.Serial(SERIAL_PORT, 9600)
     ser.flush()
     
-    path = create_rectangle(x = 70, y = 80, step = 1, y_offset = 300)
+    path = create_rectangle(x = 60, y = 60, step = 1, y_offset = 290)
     plot_rectangle_path(rect_points = path)
     path = cartesian_to_cylindrical(cartesian_points = path)
+    # plot_cylindrical_path(cylindrical_points=path)
     # print(path)
     
-    # r_0, theta_0 = readPosition(ser)
+    r_0, theta_0 = readPosition(ser)
     # r_0_mm = convert_radius_coordinates_to_mm(radius=r_0)
     r_0_mm = readRadiusPositionMM(serial=ser)
     r_prev      = path[0][0]
@@ -95,7 +106,7 @@ def main(args):
     print(f"Current postion: \n         r0: {r_0_mm}\n         t0: {0}")
     print(f"Start position: \n         r: {r_prev}\n         t0: {theta_prev}")
     
-    plot(ser=ser, path=path, r_0=r_0_mm)
+    plot(ser=ser, path=path, r_0=r_0_mm, theta_0=theta_0)
     
     
     ser.close()

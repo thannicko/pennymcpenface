@@ -27,7 +27,8 @@ def readPosition(serial):
                 r = int(decoded_data[1])       
                 theta = int(decoded_data[3])
                 # print(f"r: {r}, theta: {theta}")
-                return r, theta
+                theta_degree = theta/2840
+                return r, theta_degree
             print("Could not read position")
         
         except(KeyboardInterrupt):
