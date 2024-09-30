@@ -1,5 +1,6 @@
 import serial
 import time
+from geometry import convert_radius_coordinates_to_mm
 
 def sendCommandNTimes(serial, command, repetitions = 1, sleep_time = 0.1):
     for n in range(repetitions):
@@ -37,3 +38,7 @@ def readPosition(serial):
             print("Error reading postion")
             break
 
+
+def readRadiusPositionMM(serial):
+    r, theta = readPosition(serial) 
+    return convert_radius_coordinates_to_mm(radius = r)

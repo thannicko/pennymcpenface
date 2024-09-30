@@ -4,9 +4,9 @@ import time
 import argparse
 from create_rectangle import create_rectangle, plot_rectangle_path
 from geometry import cartesian_to_cylindrical, convert_radius_coordinates_to_mm
-from motors import sendCommandNTimes, readPosition
+from motors import sendCommandNTimes, readPosition, readRadiusPositionMM
 
-RADIUS      = 285  # mm (23 cm)
+# RADIUS      = 285  # mm (23 cm)
 cmd_up      = 'w'
 cmd_down    = 's'
 cmd_left    = 'a'
@@ -15,11 +15,11 @@ min_angle   = 0.2 #degree
 min_radius  = 5 #mm
 
 # calibration shows the linear motor moves differently up and down
-min_radius_up = 4.8 #mm
-min_radius_down = 4.56
+min_radius_up =  4.8#mm
+min_radius_down = 4.5
 
 
-def plot(ser, path, r_0):
+def plot(ser, path, r_0, sleep_time=0.1):
     # r_prev      = path[0][0]
     theta_prev  = path[0][1]
     
@@ -40,16 +40,19 @@ def plot(ser, path, r_0):
                     
                     sendCommandNTimes(serial=ser,
                                         command = cmd_up.encode(),
-                                        repetitions=r_steps)
+                                        repetitions=r_steps,
+                                        sleep_time=sleep_time*2)
                     
                 elif delta_r < 0:
                     r_steps = abs(round(delta_r/min_radius_down)) # how many steps to move
                     print(f"Moving {delta_r}mm in {r_steps} steps")
                     sendCommandNTimes(serial=ser,
                                         command = cmd_down.encode(),
-                                        repetitions=r_steps)
+                                        repetitions=r_steps,
+                                        sleep_time=sleep_time*2)
                 
                 r_prev = r - (delta_r%min_radius)
+                r_prev = readRadiusPositionMM(serial=ser)
                 # r_prev = r
 
             if abs(delta_theta) >= min_angle:
@@ -58,11 +61,13 @@ def plot(ser, path, r_0):
                 if delta_theta > 0:
                     sendCommandNTimes(serial=ser,
                                         command = cmd_right.encode(),
-                                        repetitions=theta_steps)
+                                        repetitions=theta_steps,
+                                        sleep_time=sleep_time)
                 elif delta_theta < 0:
                     sendCommandNTimes(serial=ser,
                                         command = cmd_left.encode(),
-                                        repetitions=theta_steps)
+                                        repetitions=theta_steps,
+                                        sleep_time=sleep_time)
                 # print(delta_theta)
                 theta_prev = theta - (delta_theta%min_angle)
                 # theta_prev = theta
@@ -77,19 +82,20 @@ def main(args):
     ser = serial.Serial(SERIAL_PORT, 9600)
     ser.flush()
     
-    path = create_rectangle(x = 50, y = 70, step = 1, y_offset = 280)
+    path = create_rectangle(x = 70, y = 80, step = 1, y_offset = 300)
     plot_rectangle_path(rect_points = path)
     path = cartesian_to_cylindrical(cartesian_points = path)
     # print(path)
     
-    r_0, theta_0 = readPosition(ser)
-    r_0_mm = convert_radius_coordinates_to_mm(radius=r_0)
+    # r_0, theta_0 = readPosition(ser)
+    # r_0_mm = convert_radius_coordinates_to_mm(radius=r_0)
+    r_0_mm = readRadiusPositionMM(serial=ser)
     r_prev      = path[0][0]
     theta_prev  = path[0][1]
     print(f"Current postion: \n         r0: {r_0_mm}\n         t0: {0}")
     print(f"Start position: \n         r: {r_prev}\n         t0: {theta_prev}")
     
-    # plot(ser=ser, path=path, r_0=r_0_mm)
+    plot(ser=ser, path=path, r_0=r_0_mm)
     
     
     ser.close()
