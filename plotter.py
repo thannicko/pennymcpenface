@@ -4,15 +4,18 @@ import time
 import argparse
 from create_rectangle import create_rectangle, plot_rectangle_path
 from geometry import cartesian_to_cylindrical
-import time
+from motors import sendCommandNTimes
 
 RADIUS = 230  # mm (23 cm)
 cmd_up      = 'w'
 cmd_down    = 's'
 cmd_left    = 'a'
 cmd_right   = 'd'
-min_angle   = 1 #degree
+min_angle   = 0.2 #degree
 min_radius  = 5 #mm
+
+
+
 
 def main(args):
     SERIAL_PORT = args.port
@@ -22,7 +25,7 @@ def main(args):
     ser.flush()
     
     path = create_rectangle(x = 50, y = 70, step = 1, y_offset = 270)
-    # plot_rectangle_path(rect_points = path)
+    plot_rectangle_path(rect_points = path)
     path = cartesian_to_cylindrical(cartesian_points = path)
     # print(path)
     r_prev      = path[0][0]
@@ -33,31 +36,39 @@ def main(args):
             delta_theta = round(theta - theta_prev)
             
             if abs(delta_r) >= min_radius:
-                print(delta_r)
+                r_steps = abs(round(delta_r/min_radius)) # how many steps to move
+                print(f"Moving {delta_r}mm in {r_steps} steps")
                 
                 #TODO move actual number of steps
                 if delta_r > 0:
                     # for step in delta_r%min_radius
                     # assuming it's just one step
-                    ser.write(cmd_up.encode()) 
-                    time.sleep(0.1)
+                    # ser.write(cmd_up.encode()) 
+                    # time.sleep(0.1)
+                    sendCommandNTimes(serial=ser,
+                                        command = cmd_up.encode(),
+                                        repetitions=r_steps)
                     
                 elif delta_r < 0:
-                    ser.write(cmd_down.encode())
-                    time.sleep(0.1)
+                    sendCommandNTimes(serial=ser,
+                                        command = cmd_down.encode(),
+                                        repetitions=r_steps)
                 
-                r_prev = r
+                r_prev = r - (delta_r%min_radius)
 
             if abs(delta_theta) >= min_angle:
+                theta_steps = abs(round(delta_theta/min_angle)) # how many steps to move
+                print(f"Moving {delta_theta} degrees in {theta_steps} steps")
                 if delta_theta > 0:
-                    ser.write(cmd_right.encode()) 
-                    time.sleep(0.1)
+                    sendCommandNTimes(serial=ser,
+                                        command = cmd_right.encode(),
+                                        repetitions=theta_steps)
                 elif delta_theta < 0:
-                    ser.write(cmd_left.encode())
-                    time.sleep(0.1)
+                    sendCommandNTimes(serial=ser,
+                                        command = cmd_left.encode(),
+                                        repetitions=theta_steps)
                 print(delta_theta)
-                theta_prev = theta
-                #TODO move number of steps
+                theta_prev = theta - (delta_theta%min_angle)
 
 
     except(KeyboardInterrupt):

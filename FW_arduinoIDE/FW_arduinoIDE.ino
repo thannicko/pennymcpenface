@@ -166,7 +166,7 @@ int linearExtendStep(uint16_t step = steps_per_5mm, uint16_t speed = 4095)
 
 // FUNCTIONS FOR THE ROTATIONAL STEPPER MOTOR
 
-int rotationStep(int direction = 1, uint16_t angle = 1, uint16_t waiting_delay = 100){
+int rotationStep(int direction = 1, float angle = 1, uint16_t waiting_delay = 100){
   // Move an angle from current position
   stepperDriver.XTARGET(stepperDriver.XACTUAL() + direction * (MICROSTEP_FACTOR * FULL_STEPS_PER_REV * GB * angle / 360) );
   while (!stepperDriver.position_reached()) {
@@ -199,12 +199,12 @@ void loop() {
 
       if (input == 'a') {
         Serial.println("User Input: Move Left!");
-        rotationStep(left_rotation);
+        rotationStep(left_rotation, 0.2);
       }
 
       if (input == 'd') {
         Serial.println("User Input: Move Right!");
-        rotationStep(right_rotation);
+        rotationStep(right_rotation, 0.2);
       }
     Serial.println(readPosition()); // Read "FL" Port
     }
