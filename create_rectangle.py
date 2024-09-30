@@ -60,3 +60,16 @@ def plot_rectangle_path(rect_points):
     fig.show()
     
     
+    
+def create_heart(y_offset = 300):
+    # Generate t values
+    t = np.linspace(0, 2 * np.pi, 1000)  # 1000 points for a smooth curve
+
+    # Parametric equations for the heart
+    x = (16 * np.sin(t)**3 ) * 2
+    y = (13 * np.cos(t) - 5 * np.cos(2*t) - 2 * np.cos(3*t) - np.cos(4*t)) * 2 + y_offset
+
+
+    # Store the x, y coordinates for further use
+    coordinates = list(zip(x, y))
+    return coordinates

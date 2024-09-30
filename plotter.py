@@ -2,7 +2,7 @@ import serial
 import math
 import time
 import argparse
-from create_rectangle import create_rectangle, plot_rectangle_path
+from create_rectangle import create_rectangle, plot_rectangle_path, create_heart
 from geometry import cartesian_to_cylindrical, convert_radius_coordinates_to_mm
 from motors import sendCommandNTimes, readPosition, readRadiusPositionMM
 
@@ -12,16 +12,13 @@ cmd_down    = 's'
 cmd_left    = 'a'
 cmd_right   = 'd'
 min_angle   = 0.2 #degree
-min_radius  = 2 #mm
+min_radius  = 3 #mm
 
 theta_position_conversion = 2840
 
 # calibration shows the linear motor moves differently up and down
-min_radius_up =  4.8#mm
-min_radius_down = 4.5
-
-min_radius_up =  2#mm
-min_radius_down = 2
+min_radius_up   = 2#mm
+min_radius_down = 5
 
 
 def plot(ser, path, r_0, theta_0, sleep_time=0.1):
@@ -93,6 +90,7 @@ def main(args):
     ser.flush()
     
     path = create_rectangle(x = 60, y = 60, step = 1, y_offset = 290)
+    path = create_heart(y_offset = 350)
     plot_rectangle_path(rect_points = path)
     path = cartesian_to_cylindrical(cartesian_points = path)
     # plot_cylindrical_path(cylindrical_points=path)
