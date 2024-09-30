@@ -180,6 +180,12 @@ int rotationStep(int direction = 1, float angle = 1, uint16_t waiting_delay = 10
 void loop() {
   int right_rotation = 1;
   int left_rotation  = -1;
+  float min_angle    = 0.2;
+  // return the position
+  Serial.print("r,"); // Read "FL" Port
+  Serial.print(readPosition());
+  Serial.print(", theta,");
+  Serial.println(stepperDriver.XACTUAL());
   
 
   if (Serial.available()) {
@@ -188,24 +194,23 @@ void loop() {
       
   
       if (input == 's') {     
-        Serial.println("User Input: Move down!");
+        Serial.println("Move down!");
         linearRetractStep();
       }
 
       if (input == 'w') {
-        Serial.println("User Input: Move up!");
+        Serial.println("Move up!");
         linearExtendStep();
       }
 
       if (input == 'a') {
-        Serial.println("User Input: Move Left!");
-        rotationStep(left_rotation, 0.2);
+        Serial.println("Move Left!");
+        rotationStep(left_rotation, min_angle);
       }
 
       if (input == 'd') {
-        Serial.println("User Input: Move Right!");
-        rotationStep(right_rotation, 0.2);
+        Serial.println("Move Right!");
+        rotationStep(right_rotation, min_angle);
       }
-    Serial.println(readPosition()); // Read "FL" Port
     }
 }
