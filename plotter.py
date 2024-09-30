@@ -15,25 +15,13 @@ min_angle   = 0.2 #degree
 min_radius  = 5 #mm
 
 
-
-
-def main(args):
-    SERIAL_PORT = args.port
-    # Connect
-    ser = serial.Serial(SERIAL_PORT, 9600)
-    # ser.open()
-    ser.flush()
-    
-    path = create_rectangle(x = 50, y = 70, step = 1, y_offset = 270)
-    plot_rectangle_path(rect_points = path)
-    path = cartesian_to_cylindrical(cartesian_points = path)
-    # print(path)
+def plot(ser, path):
     r_prev      = path[0][0]
     theta_prev  = path[0][1]
     try:
         for r, theta in path:
             delta_r     = round(r - r_prev)
-            delta_theta = round(theta - theta_prev)
+            delta_theta = round(theta - theta_prev,1)
             
             if abs(delta_r) >= min_radius:
                 r_steps = abs(round(delta_r/min_radius)) # how many steps to move
@@ -54,7 +42,8 @@ def main(args):
                                         command = cmd_down.encode(),
                                         repetitions=r_steps)
                 
-                r_prev = r - (delta_r%min_radius)
+                # r_prev = r - (delta_r%min_radius)
+                r_prev = r
 
             if abs(delta_theta) >= min_angle:
                 theta_steps = abs(round(delta_theta/min_angle)) # how many steps to move
@@ -68,25 +57,26 @@ def main(args):
                                         command = cmd_left.encode(),
                                         repetitions=theta_steps)
                 print(delta_theta)
-                theta_prev = theta - (delta_theta%min_angle)
-
-
+                # theta_prev = theta - (delta_theta%min_angle)
+                theta_prev = theta
+    
     except(KeyboardInterrupt):
         print("... interrupted!")
         ser.close()
-        
-        # print(f"R: {round(r)}, theta: {round(theta)}")
 
+def main(args):
+    SERIAL_PORT = args.port
+    # Connect
+    ser = serial.Serial(SERIAL_PORT, 9600)
+    # ser.open()
+    ser.flush()
     
-
+    path = create_rectangle(x = 50, y = 70, step = 1, y_offset = 270)
+    plot_rectangle_path(rect_points = path)
+    path = cartesian_to_cylindrical(cartesian_points = path)
+    print(path)
     
-    # try:
-    #     for x in range(0,42):
-    #         ser.write(cmd_up.encode())  
-            
-    # except(KeyboardInterrupt):
-    #     print("... interrupted!")
-    #     ser.close()
+    plot(ser=ser, path=path)
     
     ser.close()
 
