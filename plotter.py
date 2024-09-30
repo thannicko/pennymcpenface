@@ -17,7 +17,7 @@ min_radius  = 3 #mm
 theta_position_conversion = 2840
 
 # calibration shows the linear motor moves differently up and down
-min_radius_up   = 2#mm
+min_radius_up   = 3#mm
 min_radius_down = 5
 
 
@@ -38,7 +38,8 @@ def plot(ser, path, r_0, theta_0, sleep_time=0.1):
             delta_theta = round(theta - theta_prev,1)
             
             
-            if abs(delta_r) >= min_radius:
+            # if abs(delta_r) >= min_radius:
+            if (delta_r >= min_radius_up) or (delta_r <= min_radius_down):
                 if delta_r > 0:
                     r_steps = abs(round(delta_r/min_radius_up)) # how many steps to move
                     print(f"Moving {delta_r}mm in {r_steps} steps")
@@ -49,7 +50,7 @@ def plot(ser, path, r_0, theta_0, sleep_time=0.1):
                                         sleep_time=sleep_time*2)
                     
                 elif delta_r < 0:
-                    r_steps = abs(round(delta_r/min_radius_down)) # how many steps to move
+                    r_steps = abs(round(delta_r/min_radius)) # how many steps to move
                     print(f"Moving {delta_r}mm in {r_steps} steps")
                     sendCommandNTimes(serial=ser,
                                         command = cmd_down.encode(),
